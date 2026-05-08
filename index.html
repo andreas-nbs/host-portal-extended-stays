@@ -1,0 +1,923 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VLOO Host Extended Stay Request</title>
+    <style>
+      :root {
+        --bg: #072739;
+        --panel: #082f42;
+        --ink: #072739;
+        --surface: #e0f0fb;
+        --border: #a8c8e0;
+        --brand: #006988;
+        --cta: #4c85b1;
+        --cta-hover: #3e6f94;
+        --pill: #608ac0;
+        --danger: #e95848;
+        --muted: #6d7d86;
+        --warning: #f4c6a7;
+        --success: #80d1f6;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top left, rgba(128, 209, 246, 0.16), transparent 30%),
+          linear-gradient(180deg, #0a2a3c 0%, var(--bg) 100%);
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      button, select { font: inherit; }
+      button { cursor: pointer; }
+      h1, h2, h3, p { margin-top: 0; }
+
+      .page {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 42px;
+      }
+
+      .backline {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
+        color: var(--surface);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .backline span {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border: 1px solid rgba(224, 240, 251, .18);
+        border-radius: 999px;
+        color: var(--success);
+        font-size: 22px;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 20px;
+        align-items: end;
+        margin-bottom: 18px;
+        color: #fff;
+      }
+
+      .eyebrow {
+        margin-bottom: 6px;
+        color: var(--success);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      h1 {
+        margin-bottom: 7px;
+        font-size: clamp(28px, 4vw, 42px);
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        max-width: 720px;
+        margin-bottom: 0;
+        color: #c8dce6;
+        line-height: 1.5;
+      }
+
+      .space-select {
+        width: min(310px, 100%);
+        border: 1px solid rgba(168, 200, 224, .55);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--ink);
+        padding: 10px 12px;
+      }
+
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+
+      .nav button {
+        border: 1px solid rgba(168, 200, 224, .38);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, .08);
+        color: #fff;
+        padding: 10px 13px;
+        font-weight: 850;
+      }
+
+      .nav button.active {
+        border-color: #fff;
+        background: #fff;
+        color: var(--brand);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 310px minmax(0, 1fr);
+        gap: 14px;
+        align-items: start;
+      }
+
+      .panel {
+        overflow: hidden;
+        border: 1px solid rgba(168, 200, 224, .24);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, .18);
+      }
+
+      .panel-head {
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+      }
+
+      .panel-head h2 {
+        margin-bottom: 4px;
+        font-size: 18px;
+      }
+
+      .panel-head p {
+        margin-bottom: 0;
+        color: #496470;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .request-list {
+        display: grid;
+        gap: 8px;
+        padding: 12px;
+      }
+
+      .request-card {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #fff;
+        padding: 12px;
+        text-align: left;
+      }
+
+      .request-card.active {
+        border-color: var(--brand);
+        box-shadow: 0 0 0 3px rgba(0, 105, 136, .18);
+      }
+
+      .request-card.pending { border-left: 5px solid var(--cta); }
+      .request-card.approved { border-left: 5px solid var(--success); }
+      .request-card.rejected { border-left: 5px solid var(--danger); opacity: .78; }
+
+      .request-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 0;
+      }
+
+      .company {
+        display: block;
+        color: var(--ink);
+        font-weight: 850;
+      }
+
+      .person {
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 750;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        border-radius: 999px;
+        padding: 3px 9px;
+        background: var(--surface);
+        color: var(--ink);
+        font-size: 11px;
+        font-weight: 850;
+        white-space: nowrap;
+      }
+
+      .badge.pending { background: rgba(76, 133, 177, .16); color: var(--brand); }
+      .badge.approved { background: rgba(128, 209, 246, .18); color: var(--brand); }
+      .badge.rejected { background: #fae9e7; color: #914036; }
+
+      .detail-grid,
+      .impact-grid {
+        display: grid;
+        gap: 9px;
+      }
+
+      .detail-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .impact-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+      .detail,
+      .impact {
+        border-radius: 8px;
+        background: #f8fdff;
+        padding: 10px;
+      }
+
+      .detail,
+      .impact {
+        border: 1px solid var(--border);
+        background: #fbfdfe;
+      }
+
+      .detail span,
+      .impact span {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 850;
+      }
+
+      .detail strong,
+      .impact strong {
+        display: block;
+        margin-top: 4px;
+        font-size: 14px;
+      }
+
+      .main {
+        display: grid;
+        gap: 14px;
+      }
+
+      .request-body {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 310px;
+        gap: 16px;
+        padding: 18px;
+      }
+
+      .summary-title {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .summary-title h2 {
+        margin-bottom: 3px;
+        font-size: 24px;
+      }
+
+      .summary-title p {
+        margin-bottom: 0;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      .message {
+        margin-top: 14px;
+        border-radius: 8px;
+        background: #f8fdff;
+        color: #334c57;
+        padding: 12px;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .price-box {
+        align-self: start;
+        border-radius: 8px;
+        background: var(--surface);
+        padding: 16px;
+      }
+
+      .price-box span {
+        display: block;
+        color: #496470;
+        font-size: 12px;
+        font-weight: 850;
+      }
+
+      .price-box strong {
+        display: block;
+        margin-top: 6px;
+        color: var(--brand);
+        font-size: 30px;
+        line-height: 1;
+      }
+
+      .price-box p {
+        margin: 10px 0 0;
+        color: #496470;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .review-box {
+        display: grid;
+        gap: 12px;
+        padding: 0 18px 18px;
+      }
+
+      .notice {
+        border-radius: 8px;
+        background: var(--warning);
+        color: #4d321f;
+        padding: 11px 12px;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .notice.success {
+        background: rgba(128, 209, 246, .16);
+        color: var(--brand);
+        font-weight: 800;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      .primary,
+      .secondary,
+      .danger {
+        min-height: 40px;
+        border-radius: 8px;
+        padding: 9px 13px;
+        font-weight: 850;
+      }
+
+      .primary {
+        border: 1px solid var(--cta);
+        background: var(--cta);
+        color: #fff;
+      }
+
+      .primary:hover { border-color: var(--cta-hover); background: var(--cta-hover); }
+
+      .secondary {
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--ink);
+      }
+
+      .danger {
+        border: 1px solid #e4b6b1;
+        background: #fff;
+        color: var(--danger);
+      }
+
+      .flex-view {
+        display: none;
+      }
+
+      .flex-view.active,
+      .request-view.active {
+        display: block;
+      }
+
+      .request-view {
+        display: none;
+      }
+
+      .flex-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 14px;
+        padding: 18px;
+      }
+
+      .calendar-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .calendar-head h2 {
+        margin-bottom: 3px;
+        font-size: 19px;
+      }
+
+      .calendar-head p {
+        margin-bottom: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .month {
+        min-width: 120px;
+        text-align: right;
+        color: var(--brand);
+        font-size: 20px;
+        font-weight: 850;
+      }
+
+      .weekdays,
+      .days {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .weekdays { margin-bottom: 8px; }
+
+      .weekday {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 850;
+        text-align: center;
+      }
+
+      .day {
+        min-height: 76px;
+        border: 1px solid #e5edf1;
+        border-radius: 8px;
+        background: #fff;
+        padding: 8px;
+      }
+
+      .day.closed { background: #eef2f4; color: #8d9ba2; }
+      .day.extended { border-color: var(--brand); background: #f8fdff; }
+      .day.collision { border-color: #ef9b91; background: #fff2f0; }
+      .day.partial { border-color: var(--warning); background: #fff8ee; }
+
+      .day-number {
+        display: block;
+        font-weight: 900;
+      }
+
+      .day-meta {
+        display: block;
+        margin-top: 9px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1.25;
+      }
+
+      .sync-summary {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #fbfdfe;
+        padding: 14px;
+      }
+
+      .sync-summary h3 {
+        margin-bottom: 8px;
+        font-size: 16px;
+      }
+
+      .sync-summary p,
+      .collision-list {
+        margin-bottom: 12px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .collision-list {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+      }
+
+      .collision {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #fff;
+        padding: 10px;
+      }
+
+      .collision strong {
+        display: block;
+        font-size: 13px;
+      }
+
+      .collision span {
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 980px) {
+        .topbar,
+        .layout,
+        .request-body,
+        .flex-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .detail-grid,
+        .impact-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .space-select { width: 100%; }
+      }
+
+      @media (max-width: 650px) {
+        .page { width: min(100% - 20px, 1120px); padding-top: 18px; }
+        .detail-grid,
+        .impact-grid,
+        .impact-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .calendar-scroll { overflow-x: auto; }
+        .calendar-grid { min-width: 680px; }
+        .actions { justify-content: stretch; }
+        .actions button { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <div class="backline"><span>‹</span> Host portal</div>
+
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Host portal</p>
+          <h1 id="pageTitle">Extended stays requests</h1>
+          <p class="lead">Review the request details, add it to the flexible calendar for capacity checking, then return here to approve or reject.</p>
+        </div>
+        <select class="space-select" aria-label="Select space">
+          <option>VLOO Workspace - Oslo</option>
+          <option>Meeting Hub - Bergen</option>
+          <option>Studio Desk Area</option>
+        </select>
+      </header>
+
+      <div class="nav" aria-label="Prototype screens">
+        <button class="active" id="requestTab" type="button">Incoming request</button>
+        <button id="flexTab" type="button">Flexible calendar</button>
+      </div>
+
+      <div class="layout">
+        <aside class="panel">
+          <div class="panel-head">
+            <h2>Incoming requests</h2>
+            <p>Select a request to review the submitted booking details.</p>
+          </div>
+          <div class="request-list" id="requestList"></div>
+        </aside>
+
+        <section class="main">
+          <section class="panel request-view active" id="requestView">
+            <div class="request-body">
+              <div>
+                <div class="summary-title">
+                  <div>
+                    <h2 id="requestTitle">Request</h2>
+                    <p id="requestSubtitle">Submitted by guest</p>
+                  </div>
+                  <span class="badge pending" id="statusBadge">Pending</span>
+                </div>
+
+                <div class="detail-grid">
+                  <div class="detail"><span>Start date</span><strong id="startDate">-</strong></div>
+                  <div class="detail"><span>Pattern</span><strong id="pattern">-</strong></div>
+                  <div class="detail"><span>Duration</span><strong id="duration">-</strong></div>
+                  <div class="detail"><span>Desks</span><strong id="desks">-</strong></div>
+                </div>
+
+                <div class="message" id="guestMessage"></div>
+              </div>
+
+              <aside class="price-box">
+                <span>Potential earnings</span>
+                <strong id="price">NOK 0</strong>
+                <p id="priceNote">Calculated from the requested days and desks.</p>
+              </aside>
+            </div>
+
+            <div class="review-box">
+              <div class="impact-grid">
+                <div class="impact"><span>Flexible calendar</span><strong id="flexSyncState">Not added</strong></div>
+                <div class="impact"><span>Auto cancellations</span><strong id="autoCancelCount">0</strong></div>
+                <div class="impact"><span>Existing flex bookings</span><strong id="existingFlexCount">0</strong></div>
+              </div>
+
+              <div class="notice" id="requestNotice">Add the request to the flexible calendar before making a decision.</div>
+
+              <div class="actions">
+                <button class="secondary" id="addToFlexButton" type="button">Add to flex</button>
+                <button class="secondary" id="removeFromFlexButton" type="button">Remove</button>
+                <button class="secondary" id="switchToFlexButton" type="button">View flex calendar</button>
+                <button class="danger" id="rejectButton" type="button">Reject</button>
+                <button class="primary" id="approveButton" type="button">Approve</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel flex-view" id="flexView">
+            <div class="flex-layout">
+              <div>
+                <div class="calendar-head">
+                  <div>
+                    <h2>Flexible calendar</h2>
+                    <p>The incoming extended request is shown as reserved capacity after it is added.</p>
+                  </div>
+                  <div class="month">June 2026</div>
+                </div>
+
+                <div class="calendar-scroll">
+                  <div class="calendar-grid">
+                    <div class="weekdays">
+                      <div class="weekday">Mon</div><div class="weekday">Tue</div><div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div><div class="weekday">Sun</div>
+                    </div>
+                    <div class="days" id="calendarDays"></div>
+                  </div>
+                </div>
+              </div>
+
+              <aside class="sync-summary">
+                <h3 id="flexSummaryTitle">Request not added</h3>
+                <p id="flexSummaryText">Add the incoming extended request from the request screen to preview the updated flexible calendar status.</p>
+                <div class="collision-list" id="collisionList"></div>
+                <div class="actions">
+                  <button class="secondary" id="backToRequestButton" type="button">Back to request</button>
+                </div>
+              </aside>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const totalDesks = 6;
+      const pricePerDeskDay = 300;
+      const weekdayLabels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+      const requests = [
+        {
+          id: "northstar",
+          company: "Northstar Labs",
+          guest: "Maja Solberg",
+          status: "pending",
+          addedToFlex: false,
+          reviewedFlex: false,
+          startDay: 1,
+          weekdays: [0, 2, 4],
+          weeks: 52,
+          desks: 6,
+          message: "We need all six desks every Monday, Wednesday and Friday for a year. A quiet section is preferred, but the exact desks can vary."
+        },
+        {
+          id: "atlas",
+          company: "Atlas Legal",
+          guest: "Sara Lund",
+          status: "pending",
+          addedToFlex: false,
+          reviewedFlex: false,
+          startDay: 8,
+          weekdays: [0, 1, 2, 3],
+          weeks: 16,
+          desks: 4,
+          message: "We are testing an Oslo satellite team. We need the same weekly pattern and would like to avoid dates with heavy drop-in traffic."
+        },
+        {
+          id: "fjord",
+          company: "Fjord Studio",
+          guest: "Andre Vik",
+          status: "approved",
+          addedToFlex: true,
+          reviewedFlex: true,
+          startDay: 2,
+          weekdays: [1, 3],
+          weeks: 24,
+          desks: 2,
+          message: "Approved pilot for design team overflow."
+        }
+      ];
+
+      const existingFlexBookings = [
+        { day: 12, company: "Kite Systems", desks: 3 },
+        { day: 17, company: "Mono Design", desks: 2 },
+        { day: 19, company: "Bright Bank", desks: 3 },
+        { day: 22, company: "North PR", desks: 4 },
+        { day: 24, company: "Orbit Health", desks: 2 },
+        { day: 26, company: "Ruter Labs", desks: 1 }
+      ];
+
+      let selectedRequestId = "northstar";
+      let activeScreen = "request";
+
+      const requestList = document.querySelector("#requestList");
+      const calendarDays = document.querySelector("#calendarDays");
+      const collisionList = document.querySelector("#collisionList");
+      const requestNotice = document.querySelector("#requestNotice");
+
+      function selectedRequest() {
+        return requests.find((request) => request.id === selectedRequestId) || requests[0];
+      }
+
+      function calendarWeekday(day) {
+        return (new Date(2026, 5, day).getDay() + 6) % 7;
+      }
+
+      function requestIncludesDay(request, day) {
+        return day >= request.startDay && request.weekdays.includes(calendarWeekday(day));
+      }
+
+      function requestedDays(request) {
+        const days = [];
+        for (let day = 1; day <= 30; day += 1) {
+          if (requestIncludesDay(request, day)) days.push(day);
+        }
+        return days;
+      }
+
+      function allBookingDays(request) {
+        return request.weeks * request.weekdays.length;
+      }
+
+      function formatLongPattern(request) {
+        return request.weekdays.map((day) => weekdayLabels[day]).join(", ");
+      }
+
+      function formatStatus(status) {
+        if (status === "approved") return "Approved";
+        if (status === "rejected") return "Rejected";
+        return "Pending";
+      }
+
+      function formatPrice(value) {
+        return `NOK ${value.toLocaleString("en-US")}`;
+      }
+
+      function collisionsForRequest(request) {
+        if (!request.addedToFlex) return [];
+        return existingFlexBookings
+          .filter((booking) => requestIncludesDay(request, booking.day))
+          .map((booking) => ({
+            ...booking,
+            remaining: Math.max(0, totalDesks - request.desks),
+            mustCancel: Math.max(0, totalDesks - request.desks) === 0
+          }));
+      }
+
+      function renderRequestList() {
+        requestList.innerHTML = "";
+        requests.forEach((request) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `request-card ${request.status} ${request.id === selectedRequestId ? "active" : ""}`;
+          button.innerHTML = `
+            <div class="request-top">
+              <span><span class="company">${request.company}</span><span class="person">${request.guest}</span></span>
+              <span class="badge ${request.status}">${formatStatus(request.status)}</span>
+            </div>
+          `;
+          button.addEventListener("click", () => {
+            selectedRequestId = request.id;
+            activeScreen = "request";
+            render();
+          });
+          requestList.appendChild(button);
+        });
+      }
+
+      function renderRequest() {
+        const request = selectedRequest();
+        const bookingDays = allBookingDays(request);
+        const collisions = collisionsForRequest(request);
+        const automatic = collisions.filter((collision) => collision.mustCancel).length;
+
+        document.querySelector("#requestTitle").textContent = request.company;
+        document.querySelector("#requestSubtitle").textContent = `Submitted by ${request.guest}`;
+        document.querySelector("#statusBadge").className = `badge ${request.status}`;
+        document.querySelector("#statusBadge").textContent = formatStatus(request.status);
+        document.querySelector("#startDate").textContent = `June ${request.startDay}, 2026`;
+        document.querySelector("#pattern").textContent = formatLongPattern(request);
+        document.querySelector("#duration").textContent = `${request.weeks} weeks`;
+        document.querySelector("#desks").textContent = `${request.desks} desks`;
+        document.querySelector("#guestMessage").textContent = request.message;
+        document.querySelector("#price").textContent = formatPrice(bookingDays * request.desks * pricePerDeskDay);
+        document.querySelector("#priceNote").textContent = `${bookingDays} booking days x ${request.desks} desks x NOK ${pricePerDeskDay}.`;
+        document.querySelector("#flexSyncState").textContent = request.addedToFlex ? "Added" : "Not added";
+        document.querySelector("#autoCancelCount").textContent = automatic;
+        document.querySelector("#existingFlexCount").textContent = collisions.length;
+
+        document.querySelector("#approveButton").disabled = !request.addedToFlex;
+        document.querySelector("#removeFromFlexButton").disabled = !request.addedToFlex;
+        document.querySelector("#rejectButton").disabled = false;
+
+        requestNotice.className = request.addedToFlex ? "notice success" : "notice";
+        if (request.status === "approved") requestNotice.textContent = "Approved. This extended request is now reflected in the flexible calendar.";
+        else if (request.status === "rejected") requestNotice.textContent = "Rejected. The flexible calendar can be cleared or left unchanged in a real build.";
+        else if (request.addedToFlex && request.reviewedFlex) requestNotice.textContent = "Flexible calendar reviewed. You can approve or reject this request.";
+        else if (request.addedToFlex) requestNotice.textContent = "Added to flexible calendar. Switch there to review the updated status.";
+        else if (request.reviewedFlex) requestNotice.textContent = "Removed from flexible calendar. Add it again when ready to review or approve.";
+        else requestNotice.textContent = "Add the request to the flexible calendar before making a decision.";
+      }
+
+      function renderFlexCalendar() {
+        const request = selectedRequest();
+        const collisions = collisionsForRequest(request);
+        calendarDays.innerHTML = "";
+
+        for (let day = 1; day <= 30; day += 1) {
+          const isWeekend = calendarWeekday(day) > 4;
+          const isExtended = request.addedToFlex && requestIncludesDay(request, day);
+          const flexBookings = existingFlexBookings.filter((booking) => booking.day === day);
+          const remaining = Math.max(0, totalDesks - (isExtended ? request.desks : 0));
+          const hasCollision = isExtended && flexBookings.length > 0 && remaining === 0;
+          const partial = isExtended && flexBookings.length > 0 && remaining > 0;
+          const cell = document.createElement("div");
+          cell.className = [
+            "day",
+            isWeekend ? "closed" : "",
+            isExtended ? "extended" : "",
+            hasCollision ? "collision" : "",
+            partial ? "partial" : ""
+          ].join(" ");
+
+          let meta = isWeekend ? "Closed" : `${totalDesks} flex desks`;
+          if (isExtended) meta = `${remaining} flex desks left`;
+          if (hasCollision) meta = "Flex bookings auto-cancel";
+          if (partial) meta = "Existing flex booking";
+          cell.innerHTML = `<span class="day-number">${day}</span><span class="day-meta">${meta}</span>`;
+          calendarDays.appendChild(cell);
+        }
+
+        document.querySelector("#flexSummaryTitle").textContent = request.addedToFlex ? "Updated status" : "Request not added";
+        document.querySelector("#flexSummaryText").textContent = request.addedToFlex
+          ? `${request.company} is applied to the flexible calendar preview. Remaining desks and collisions are visible here.`
+          : "Add the incoming extended request from the request screen to preview the updated flexible calendar status.";
+
+        collisionList.innerHTML = "";
+        if (!request.addedToFlex) return;
+        if (!collisions.length) {
+          collisionList.innerHTML = '<div class="collision"><strong>No collisions</strong><span>No existing flexible bookings land on the requested June dates.</span></div>';
+          return;
+        }
+        collisions.forEach((collision) => {
+          const row = document.createElement("div");
+          row.className = "collision";
+          row.innerHTML = `<strong>June ${collision.day}: ${collision.company}</strong><span>${collision.desks} flex desks booked. ${collision.mustCancel ? "Auto-cancel because the extended request takes all desks." : "Host can keep or cancel because desks remain."}</span>`;
+          collisionList.appendChild(row);
+        });
+      }
+
+      function showScreen(screen) {
+        activeScreen = screen;
+        if (screen === "flex") selectedRequest().reviewedFlex = selectedRequest().addedToFlex;
+        render();
+      }
+
+      function render() {
+        renderRequestList();
+        renderRequest();
+        renderFlexCalendar();
+        document.querySelector("#requestView").classList.toggle("active", activeScreen === "request");
+        document.querySelector("#flexView").classList.toggle("active", activeScreen === "flex");
+        document.querySelector("#requestTab").classList.toggle("active", activeScreen === "request");
+        document.querySelector("#flexTab").classList.toggle("active", activeScreen === "flex");
+        document.querySelector("#pageTitle").textContent = activeScreen === "request" ? "Extended stays requests" : "Flexible calendar";
+      }
+
+      document.querySelector("#requestTab").addEventListener("click", () => showScreen("request"));
+      document.querySelector("#flexTab").addEventListener("click", () => showScreen("flex"));
+      document.querySelector("#switchToFlexButton").addEventListener("click", () => showScreen("flex"));
+      document.querySelector("#backToRequestButton").addEventListener("click", () => showScreen("request"));
+      document.querySelector("#addToFlexButton").addEventListener("click", () => {
+        selectedRequest().addedToFlex = true;
+        showScreen("flex");
+      });
+      document.querySelector("#removeFromFlexButton").addEventListener("click", () => {
+        selectedRequest().addedToFlex = false;
+        showScreen("request");
+      });
+      document.querySelector("#approveButton").addEventListener("click", () => {
+        selectedRequest().status = "approved";
+        showScreen("request");
+      });
+      document.querySelector("#rejectButton").addEventListener("click", () => {
+        selectedRequest().status = "rejected";
+        showScreen("request");
+      });
+
+      render();
+    </script>
+  </body>
+</html>
