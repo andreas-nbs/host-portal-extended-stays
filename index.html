@@ -659,12 +659,13 @@
 
             <div class="review-box">
               <div class="impact-grid">
+                <div class="impact"><span>Reserved while pending</span><strong id="reservationStatus">48 hours</strong></div>
+                <div class="impact"><span>Reserved desks / dates</span><strong id="reservedDeskDates">0 / 0</strong></div>
                 <div class="impact"><span>Conflicting Flexible bookings</span><strong id="conflictBookingCount">0</strong></div>
-                <div class="impact"><span>Affected desks / dates</span><strong id="affectedDeskDates">0 / 0</strong></div>
                 <div class="impact"><span>Estimated refund</span><strong id="refundAmount">NOK 0</strong></div>
               </div>
 
-              <div class="notice" id="requestNotice">Approving this request will reserve the Extended Stay dates and replace conflicting Flexible bookings.</div>
+              <div class="notice" id="requestNotice">Requested desks are reserved for 48 hours while the host reviews. Approving replaces conflicting Flexible bookings.</div>
 
               <div class="actions">
                 <button class="secondary" id="switchToFlexButton" type="button">Preview in Flexible calendar</button>
@@ -680,7 +681,7 @@
                 <div class="calendar-head">
                   <div>
                     <h2>Flexible calendar</h2>
-                    <p>The incoming extended request is shown as reserved capacity after it is added.</p>
+                    <p>The calendar shows the updated Flexible availability after this Extended Stay request is applied.</p>
                   </div>
                   <div class="month">June 2026</div>
                 </div>
@@ -870,6 +871,8 @@
           conflictingBookings: collisions.length,
           affectedDates,
           affectedDesks,
+          reservedDates: requestedDays(request).length,
+          reservedDesks: requestedDays(request).length * request.desks,
           refundAmount: affectedDesks * pricePerDeskDay
         };
       }
@@ -911,8 +914,9 @@
         document.querySelector("#guestMessage").textContent = request.message;
         document.querySelector("#price").textContent = formatPrice(bookingDays * request.desks * pricePerDeskDay);
         document.querySelector("#priceNote").textContent = `${bookingDays} booking days x ${request.desks} desks x NOK ${pricePerDeskDay}.`;
+        document.querySelector("#reservationStatus").textContent = request.status === "pending" ? "48 hours" : request.status === "approved" ? "Confirmed" : "Released";
+        document.querySelector("#reservedDeskDates").textContent = `${approvalImpact.reservedDesks} / ${approvalImpact.reservedDates}`;
         document.querySelector("#conflictBookingCount").textContent = approvalImpact.conflictingBookings;
-        document.querySelector("#affectedDeskDates").textContent = `${approvalImpact.affectedDesks} / ${approvalImpact.affectedDates}`;
         document.querySelector("#refundAmount").textContent = formatPrice(approvalImpact.refundAmount);
 
         document.querySelector("#approveButton").disabled = false;
@@ -921,8 +925,8 @@
         requestNotice.className = request.addedToFlex ? "notice success" : "notice";
         if (request.status === "approved") requestNotice.textContent = "Approved. Conflicting Flexible bookings are replaced by this Extended Stay.";
         else if (request.status === "rejected") requestNotice.textContent = "Rejected. Flexible bookings are unchanged.";
-        else if (request.addedToFlex && request.reviewedFlex) requestNotice.textContent = "Flexible calendar reviewed. Approving will replace conflicting Flexible bookings and refund affected guests.";
-        else requestNotice.textContent = "Approving this request will reserve the Extended Stay dates and replace conflicting Flexible bookings.";
+        else if (request.addedToFlex && request.reviewedFlex) requestNotice.textContent = "Flexible calendar reviewed. Approving replaces conflicts and refunds affected guests.";
+        else requestNotice.textContent = "Requested desks are reserved for 48 hours while the host reviews. Approving replaces conflicting Flexible bookings.";
       }
 
       function renderFlexCalendar() {
@@ -957,14 +961,14 @@
 
         document.querySelector("#flexSummaryTitle").textContent = request.addedToFlex ? "Updated status" : "Request not added";
         document.querySelector("#flexSummaryText").textContent = request.addedToFlex
-          ? `${request.company} is applied to the flexible calendar preview. Remaining desks and collisions are visible here.`
+          ? `${request.company} is applied to the Flexible calendar preview. Remaining desks and conflicts are visible here.`
           : "Add the incoming extended request from the request screen to preview the updated flexible calendar status.";
         document.querySelector("#reservedDaysMetric").textContent = impact.reservedDays;
         document.querySelector("#openDaysMetric").textContent = impact.openFlexDays;
         document.querySelector("#conflictDaysMetric").textContent = impact.conflictDays;
         document.querySelector("#desksLeftMetric").textContent = impact.desksLeft;
         document.querySelector("#impactCallout").textContent = request.addedToFlex
-          ? `${impact.reservedDays} June weekdays become Extended Stay reserved. ${impact.conflictDays} day${impact.conflictDays === 1 ? "" : "s"} contain conflicting Flexible bookings that will be replaced if approved.`
+          ? `${impact.reservedDays} June weekdays are reserved for this Extended Stay. ${impact.conflictDays} day${impact.conflictDays === 1 ? "" : "s"} contain conflicting Flexible bookings that will be replaced if approved.`
           : "No extended-stay impact has been applied yet.";
 
         collisionList.innerHTML = "";
