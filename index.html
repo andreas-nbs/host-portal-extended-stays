@@ -38,7 +38,7 @@
       h1, h2, h3, p { margin-top: 0; }
 
       .page {
-        width: min(1120px, calc(100% - 32px));
+        width: min(1320px, calc(100% - 32px));
         margin: 0 auto;
         padding: 28px 0 42px;
       }
@@ -127,7 +127,7 @@
 
       .layout {
         display: grid;
-        grid-template-columns: 310px minmax(0, 1fr);
+        grid-template-columns: 300px minmax(0, 1fr);
         gap: 14px;
         align-items: start;
       }
@@ -398,7 +398,7 @@
 
       .flex-layout {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 320px;
+        grid-template-columns: minmax(0, 1fr) 340px;
         gap: 14px;
         padding: 18px;
       }
@@ -408,7 +408,7 @@
         justify-content: space-between;
         gap: 14px;
         align-items: center;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
       }
 
       .calendar-head h2 {
@@ -447,16 +447,16 @@
       }
 
       .day {
-        min-height: 76px;
+        min-height: 78px;
         border: 1px solid #e5edf1;
         border-radius: 8px;
         background: #fff;
-        padding: 8px;
+        padding: 9px;
       }
 
       .day.closed { background: #eef2f4; color: #8d9ba2; }
       .day.extended { border-color: var(--brand); background: #f8fdff; }
-      .day.collision { border-color: #ef9b91; background: #fff2f0; }
+      .day.collision { border-color: var(--danger); background: #fff2f0; }
       .day.partial { border-color: var(--warning); background: #fff8ee; }
 
       .day-number {
@@ -477,7 +477,7 @@
         border: 1px solid var(--border);
         border-radius: 8px;
         background: #fbfdfe;
-        padding: 14px;
+        padding: 16px;
       }
 
       .sync-summary h3 {
@@ -499,11 +499,59 @@
         margin: 0;
       }
 
+      .impact-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin: 12px 0;
+      }
+
+      .summary-metric {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #fff;
+        padding: 10px;
+      }
+
+      .summary-metric span {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 850;
+      }
+
+      .summary-metric strong {
+        display: block;
+        margin-top: 5px;
+        color: var(--ink);
+        font-size: 22px;
+        line-height: 1;
+      }
+
+      .impact-callout {
+        border-radius: 8px;
+        background: var(--surface);
+        color: #294a58;
+        padding: 11px 12px;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
       .collision {
         border: 1px solid var(--border);
         border-radius: 8px;
         background: #fff;
         padding: 10px;
+      }
+
+      .collision.auto {
+        border-color: rgba(233, 88, 72, .48);
+        background: #fff2f0;
+      }
+
+      .collision.partial {
+        border-color: #e7b884;
+        background: #fff8ee;
       }
 
       .collision strong {
@@ -611,19 +659,17 @@
 
             <div class="review-box">
               <div class="impact-grid">
-                <div class="impact"><span>Flexible calendar</span><strong id="flexSyncState">Not added</strong></div>
-                <div class="impact"><span>Auto cancellations</span><strong id="autoCancelCount">0</strong></div>
-                <div class="impact"><span>Existing flex bookings</span><strong id="existingFlexCount">0</strong></div>
+                <div class="impact"><span>Conflicting Flexible bookings</span><strong id="conflictBookingCount">0</strong></div>
+                <div class="impact"><span>Affected desks / dates</span><strong id="affectedDeskDates">0 / 0</strong></div>
+                <div class="impact"><span>Estimated refund</span><strong id="refundAmount">NOK 0</strong></div>
               </div>
 
-              <div class="notice" id="requestNotice">Add the request to the flexible calendar before making a decision.</div>
+              <div class="notice" id="requestNotice">Approving this request will reserve the Extended Stay dates and replace conflicting Flexible bookings.</div>
 
               <div class="actions">
-                <button class="secondary" id="addToFlexButton" type="button">Add to flex</button>
-                <button class="secondary" id="removeFromFlexButton" type="button">Remove</button>
-                <button class="secondary" id="switchToFlexButton" type="button">View flex calendar</button>
+                <button class="secondary" id="switchToFlexButton" type="button">Preview in Flexible calendar</button>
                 <button class="danger" id="rejectButton" type="button">Reject</button>
-                <button class="primary" id="approveButton" type="button">Approve</button>
+                <button class="primary" id="approveButton" type="button">Approve and replace conflicting Flexible bookings</button>
               </div>
             </div>
           </section>
@@ -652,6 +698,17 @@
               <aside class="sync-summary">
                 <h3 id="flexSummaryTitle">Request not added</h3>
                 <p id="flexSummaryText">Add the incoming extended request from the request screen to preview the updated flexible calendar status.</p>
+
+                <div class="impact-summary-grid">
+                  <div class="summary-metric"><span>Reserved days</span><strong id="reservedDaysMetric">0</strong></div>
+                  <div class="summary-metric"><span>Flex days open</span><strong id="openDaysMetric">0</strong></div>
+                  <div class="summary-metric"><span>Conflicts</span><strong id="conflictDaysMetric">0</strong></div>
+                  <div class="summary-metric"><span>Desks left</span><strong id="desksLeftMetric">6</strong></div>
+                </div>
+
+                <div class="impact-callout" id="impactCallout">No extended-stay impact has been applied yet.</div>
+
+                <h3>Booking impact</h3>
                 <div class="collision-list" id="collisionList"></div>
                 <div class="actions">
                   <button class="secondary" id="backToRequestButton" type="button">Back to request</button>
@@ -765,8 +822,8 @@
         return `NOK ${value.toLocaleString("en-US")}`;
       }
 
-      function collisionsForRequest(request) {
-        if (!request.addedToFlex) return [];
+      function collisionsForRequest(request, includePreview = request.addedToFlex) {
+        if (!includePreview) return [];
         return existingFlexBookings
           .filter((booking) => requestIncludesDay(request, booking.day))
           .map((booking) => ({
@@ -774,6 +831,47 @@
             remaining: Math.max(0, totalDesks - request.desks),
             mustCancel: Math.max(0, totalDesks - request.desks) === 0
           }));
+      }
+
+      function impactForRequest(request) {
+        const weekdays = [];
+        const reserved = [];
+        const conflictDays = new Set();
+        const partialDays = new Set();
+        const remainingOnReservedDay = Math.max(0, totalDesks - request.desks);
+
+        for (let day = 1; day <= 30; day += 1) {
+          const isWeekend = calendarWeekday(day) > 4;
+          if (!isWeekend) weekdays.push(day);
+          if (request.addedToFlex && !isWeekend && requestIncludesDay(request, day)) {
+            reserved.push(day);
+            const hasFlexBooking = existingFlexBookings.some((booking) => booking.day === day);
+            if (hasFlexBooking && remainingOnReservedDay === 0) conflictDays.add(day);
+            if (hasFlexBooking && remainingOnReservedDay > 0) partialDays.add(day);
+          }
+        }
+
+        return {
+          weekdays: weekdays.length,
+          reservedDays: reserved.length,
+          openFlexDays: weekdays.length - reserved.filter((day) => remainingOnReservedDay === 0).length,
+          conflictDays: conflictDays.size,
+          partialDays: partialDays.size,
+          desksLeft: request.addedToFlex ? remainingOnReservedDay : totalDesks,
+          autoCancellations: collisionsForRequest(request).filter((collision) => collision.mustCancel).length
+        };
+      }
+
+      function approvalImpactForRequest(request) {
+        const collisions = collisionsForRequest(request, true);
+        const affectedDates = new Set(collisions.map((collision) => collision.day)).size;
+        const affectedDesks = collisions.reduce((sum, collision) => sum + collision.desks, 0);
+        return {
+          conflictingBookings: collisions.length,
+          affectedDates,
+          affectedDesks,
+          refundAmount: affectedDesks * pricePerDeskDay
+        };
       }
 
       function renderRequestList() {
@@ -800,8 +898,7 @@
       function renderRequest() {
         const request = selectedRequest();
         const bookingDays = allBookingDays(request);
-        const collisions = collisionsForRequest(request);
-        const automatic = collisions.filter((collision) => collision.mustCancel).length;
+        const approvalImpact = approvalImpactForRequest(request);
 
         document.querySelector("#requestTitle").textContent = request.company;
         document.querySelector("#requestSubtitle").textContent = `Submitted by ${request.guest}`;
@@ -814,26 +911,24 @@
         document.querySelector("#guestMessage").textContent = request.message;
         document.querySelector("#price").textContent = formatPrice(bookingDays * request.desks * pricePerDeskDay);
         document.querySelector("#priceNote").textContent = `${bookingDays} booking days x ${request.desks} desks x NOK ${pricePerDeskDay}.`;
-        document.querySelector("#flexSyncState").textContent = request.addedToFlex ? "Added" : "Not added";
-        document.querySelector("#autoCancelCount").textContent = automatic;
-        document.querySelector("#existingFlexCount").textContent = collisions.length;
+        document.querySelector("#conflictBookingCount").textContent = approvalImpact.conflictingBookings;
+        document.querySelector("#affectedDeskDates").textContent = `${approvalImpact.affectedDesks} / ${approvalImpact.affectedDates}`;
+        document.querySelector("#refundAmount").textContent = formatPrice(approvalImpact.refundAmount);
 
-        document.querySelector("#approveButton").disabled = !request.addedToFlex;
-        document.querySelector("#removeFromFlexButton").disabled = !request.addedToFlex;
+        document.querySelector("#approveButton").disabled = false;
         document.querySelector("#rejectButton").disabled = false;
 
         requestNotice.className = request.addedToFlex ? "notice success" : "notice";
-        if (request.status === "approved") requestNotice.textContent = "Approved. This extended request is now reflected in the flexible calendar.";
-        else if (request.status === "rejected") requestNotice.textContent = "Rejected. The flexible calendar can be cleared or left unchanged in a real build.";
-        else if (request.addedToFlex && request.reviewedFlex) requestNotice.textContent = "Flexible calendar reviewed. You can approve or reject this request.";
-        else if (request.addedToFlex) requestNotice.textContent = "Added to flexible calendar. Switch there to review the updated status.";
-        else if (request.reviewedFlex) requestNotice.textContent = "Removed from flexible calendar. Add it again when ready to review or approve.";
-        else requestNotice.textContent = "Add the request to the flexible calendar before making a decision.";
+        if (request.status === "approved") requestNotice.textContent = "Approved. Conflicting Flexible bookings are replaced by this Extended Stay.";
+        else if (request.status === "rejected") requestNotice.textContent = "Rejected. Flexible bookings are unchanged.";
+        else if (request.addedToFlex && request.reviewedFlex) requestNotice.textContent = "Flexible calendar reviewed. Approving will replace conflicting Flexible bookings and refund affected guests.";
+        else requestNotice.textContent = "Approving this request will reserve the Extended Stay dates and replace conflicting Flexible bookings.";
       }
 
       function renderFlexCalendar() {
         const request = selectedRequest();
         const collisions = collisionsForRequest(request);
+        const impact = impactForRequest(request);
         calendarDays.innerHTML = "";
 
         for (let day = 1; day <= 30; day += 1) {
@@ -854,7 +949,7 @@
 
           let meta = isWeekend ? "Closed" : `${totalDesks} flex desks`;
           if (isExtended) meta = `${remaining} flex desks left`;
-          if (hasCollision) meta = "Flex bookings auto-cancel";
+          if (hasCollision) meta = "Conflict";
           if (partial) meta = "Existing flex booking";
           cell.innerHTML = `<span class="day-number">${day}</span><span class="day-meta">${meta}</span>`;
           calendarDays.appendChild(cell);
@@ -864,17 +959,27 @@
         document.querySelector("#flexSummaryText").textContent = request.addedToFlex
           ? `${request.company} is applied to the flexible calendar preview. Remaining desks and collisions are visible here.`
           : "Add the incoming extended request from the request screen to preview the updated flexible calendar status.";
+        document.querySelector("#reservedDaysMetric").textContent = impact.reservedDays;
+        document.querySelector("#openDaysMetric").textContent = impact.openFlexDays;
+        document.querySelector("#conflictDaysMetric").textContent = impact.conflictDays;
+        document.querySelector("#desksLeftMetric").textContent = impact.desksLeft;
+        document.querySelector("#impactCallout").textContent = request.addedToFlex
+          ? `${impact.reservedDays} June weekdays become Extended Stay reserved. ${impact.conflictDays} day${impact.conflictDays === 1 ? "" : "s"} contain conflicting Flexible bookings that will be replaced if approved.`
+          : "No extended-stay impact has been applied yet.";
 
         collisionList.innerHTML = "";
-        if (!request.addedToFlex) return;
+        if (!request.addedToFlex) {
+          collisionList.innerHTML = '<div class="collision"><strong>No preview yet</strong><span>Add the request to flex to see booking impact.</span></div>';
+          return;
+        }
         if (!collisions.length) {
           collisionList.innerHTML = '<div class="collision"><strong>No collisions</strong><span>No existing flexible bookings land on the requested June dates.</span></div>';
           return;
         }
         collisions.forEach((collision) => {
           const row = document.createElement("div");
-          row.className = "collision";
-          row.innerHTML = `<strong>June ${collision.day}: ${collision.company}</strong><span>${collision.desks} flex desks booked. ${collision.mustCancel ? "Auto-cancel because the extended request takes all desks." : "Host can keep or cancel because desks remain."}</span>`;
+          row.className = `collision ${collision.mustCancel ? "auto" : "partial"}`;
+          row.innerHTML = `<strong>June ${collision.day}: ${collision.company}</strong><span>${collision.desks} Flexible desks booked. ${collision.mustCancel ? "Will be replaced and refunded if the Extended Stay is approved." : `${collision.remaining} desks remain; host can keep or replace this booking.`}</span>`;
           collisionList.appendChild(row);
         });
       }
@@ -897,19 +1002,19 @@
       }
 
       document.querySelector("#requestTab").addEventListener("click", () => showScreen("request"));
-      document.querySelector("#flexTab").addEventListener("click", () => showScreen("flex"));
-      document.querySelector("#switchToFlexButton").addEventListener("click", () => showScreen("flex"));
-      document.querySelector("#backToRequestButton").addEventListener("click", () => showScreen("request"));
-      document.querySelector("#addToFlexButton").addEventListener("click", () => {
+      document.querySelector("#flexTab").addEventListener("click", () => {
         selectedRequest().addedToFlex = true;
         showScreen("flex");
       });
-      document.querySelector("#removeFromFlexButton").addEventListener("click", () => {
-        selectedRequest().addedToFlex = false;
-        showScreen("request");
+      document.querySelector("#switchToFlexButton").addEventListener("click", () => {
+        selectedRequest().addedToFlex = true;
+        showScreen("flex");
       });
+      document.querySelector("#backToRequestButton").addEventListener("click", () => showScreen("request"));
       document.querySelector("#approveButton").addEventListener("click", () => {
         selectedRequest().status = "approved";
+        selectedRequest().addedToFlex = true;
+        selectedRequest().reviewedFlex = true;
         showScreen("request");
       });
       document.querySelector("#rejectButton").addEventListener("click", () => {
