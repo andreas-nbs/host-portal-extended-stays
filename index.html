@@ -529,6 +529,17 @@
         margin: 0;
       }
 
+      .calendar-actions {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 2px solid var(--border-soft);
+        justify-content: space-between;
+      }
+
+      .calendar-actions .danger {
+        background: #fff7f5;
+      }
+
       .impact-summary-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -700,6 +711,7 @@
 
               <div class="actions">
                 <button class="secondary" id="switchToFlexButton" type="button">View live calendar</button>
+                <button class="secondary" id="removeFromFlexButton" type="button" hidden>Release dates</button>
                 <button class="danger" id="rejectButton" type="button">Reject</button>
                 <button class="primary" id="approveButton" type="button">Approve and replace conflicting Flexible bookings</button>
               </div>
@@ -742,8 +754,9 @@
 
                 <h3>Booking impact</h3>
                 <div class="collision-list" id="collisionList"></div>
-                <div class="actions">
+                <div class="actions calendar-actions">
                   <button class="secondary" id="backToRequestButton" type="button">Back to request</button>
+                  <button class="danger" id="removeFromFlexCalendarButton" type="button" hidden>Release dates</button>
                 </div>
               </aside>
             </div>
@@ -816,6 +829,8 @@
       const calendarDays = document.querySelector("#calendarDays");
       const collisionList = document.querySelector("#collisionList");
       const requestNotice = document.querySelector("#requestNotice");
+      const removeFromFlexButton = document.querySelector("#removeFromFlexButton");
+      const removeFromFlexCalendarButton = document.querySelector("#removeFromFlexCalendarButton");
 
       function selectedRequest() {
         return requests.find((request) => request.id === selectedRequestId) || requests[0];
@@ -953,11 +968,14 @@
 
         document.querySelector("#approveButton").disabled = false;
         document.querySelector("#rejectButton").disabled = false;
+        removeFromFlexButton.hidden = !request.addedToFlex || request.status !== "pending";
+        document.querySelector("#switchToFlexButton").textContent = request.addedToFlex ? "View live calendar" : "Add to live calendar";
 
         requestNotice.className = request.addedToFlex ? "notice success" : "notice";
         if (request.status === "approved") requestNotice.textContent = "Approved. Conflicting Flexible bookings are replaced by this Extended Stay.";
         else if (request.status === "rejected") requestNotice.textContent = "Rejected. Flexible bookings are unchanged.";
         else if (request.addedToFlex && request.reviewedFlex) requestNotice.textContent = "Flexible calendar reviewed. Approving replaces conflicts and refunds affected guests.";
+        else if (request.addedToFlex) requestNotice.textContent = "Request is added to the live calendar preview. Remove it if the host wants to keep reviewing without holding calendar capacity.";
         else requestNotice.textContent = "Requested desks are reserved for 48 hours while the host reviews. Approving replaces conflicting Flexible bookings.";
       }
 
@@ -1002,6 +1020,7 @@
         document.querySelector("#impactCallout").textContent = request.addedToFlex
           ? `${impact.reservedDays} June weekdays are reserved for this Extended Stay. ${impact.conflictDays} day${impact.conflictDays === 1 ? "" : "s"} contain conflicting Flexible bookings that will be replaced if approved.`
           : "No extended-stay impact has been applied yet.";
+        removeFromFlexCalendarButton.hidden = !request.addedToFlex || request.status !== "pending";
 
         collisionList.innerHTML = "";
         if (!request.addedToFlex) {
@@ -1046,6 +1065,13 @@
         selectedRequest().addedToFlex = true;
         showScreen("flex");
       });
+      function removeSelectedRequestFromFlex() {
+        selectedRequest().addedToFlex = false;
+        selectedRequest().reviewedFlex = false;
+        showScreen("flex");
+      }
+      removeFromFlexButton.addEventListener("click", removeSelectedRequestFromFlex);
+      removeFromFlexCalendarButton.addEventListener("click", removeSelectedRequestFromFlex);
       document.querySelector("#backToRequestButton").addEventListener("click", () => showScreen("request"));
       document.querySelector("#approveButton").addEventListener("click", () => {
         selectedRequest().status = "approved";
